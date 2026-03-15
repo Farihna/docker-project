@@ -1,0 +1,50 @@
+services:
+
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_NAME: wordpress_db
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_password123
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - wp_network
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_password123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - wp_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - wp_network
+    restart: unless-stopped
+
+volumes:
+  wp_data:
+  mysql_data:
+  redis_data:
+
+networks:
+  wp_network:
+    driver: bridge
