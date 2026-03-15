@@ -30,11 +30,11 @@ Tampilan Dashboard: WordPress siap digunakan.
 
 ### 3. Docker Processes
 Membuktikan 3 container (WordPress, MySQL, Redis) berstatus Up.
-![Tampilan Docker ps](screenshoots/docker_ps.png)
+![Tampilan Docker ps](screenshots/docker_ps.png)
 
 ### 4. Redis CLI ping test
 Uji respons Redis dengan hasil PONG.
-![Reddis ping test](screenshoots/redis_test.png)
+![Reddis ping test](screenshots/redis_test.png)
 
 ## Jawaban Pertanyaan
 
