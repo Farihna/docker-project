@@ -1,0 +1,371 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "email": "admin@simplelms.id",
+      "first_name": "Admin",
+      "last_name": "LMS",
+      "is_staff": true,
+      "is_superuser": true,
+      "is_active": true,
+      "password": "pbkdf2_sha256$720000$placeholder$hashedpassword="
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "username": "instruktur01",
+      "email": "instruktur01@simplelms.id",
+      "first_name": "Budi",
+      "last_name": "Santoso",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$720000$placeholder$hashedpassword="
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "username": "instruktur02",
+      "email": "instruktur02@simplelms.id",
+      "first_name": "Siti",
+      "last_name": "Rahayu",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$720000$placeholder$hashedpassword="
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "username": "student01",
+      "email": "student01@simplelms.id",
+      "first_name": "Andi",
+      "last_name": "Pratama",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$720000$placeholder$hashedpassword="
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "username": "student02",
+      "email": "student02@simplelms.id",
+      "first_name": "Dewi",
+      "last_name": "Lestari",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "password": "pbkdf2_sha256$720000$placeholder$hashedpassword="
+    }
+  },
+  {
+    "model": "courses.userprofile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "role": "admin",
+      "bio": "Administrator Simple LMS.",
+      "avatar": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.userprofile",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "role": "instructor",
+      "bio": "Instruktur berpengalaman di bidang web development.",
+      "avatar": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.userprofile",
+    "pk": 3,
+    "fields": {
+      "user": 3,
+      "role": "instructor",
+      "bio": "Data scientist dan pengajar machine learning.",
+      "avatar": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.userprofile",
+    "pk": 4,
+    "fields": {
+      "user": 4,
+      "role": "student",
+      "bio": "",
+      "avatar": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.userprofile",
+    "pk": 5,
+    "fields": {
+      "user": 5,
+      "role": "student",
+      "bio": "",
+      "avatar": null,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.category",
+    "pk": 1,
+    "fields": {
+      "name": "Pemrograman",
+      "slug": "pemrograman",
+      "description": "Kursus-kursus di bidang pemrograman dan software development",
+      "parent": null,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.category",
+    "pk": 2,
+    "fields": {
+      "name": "Web Development",
+      "slug": "web-development",
+      "description": "Frontend, Backend, dan Fullstack web development",
+      "parent": 1,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.category",
+    "pk": 3,
+    "fields": {
+      "name": "Data Science",
+      "slug": "data-science",
+      "description": "Machine Learning, Data Analysis, dan AI",
+      "parent": 1,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.category",
+    "pk": 4,
+    "fields": {
+      "name": "Desain",
+      "slug": "desain",
+      "description": "UI/UX Design dan Graphic Design",
+      "parent": null,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "courses.course",
+    "pk": 1,
+    "fields": {
+      "title": "Django untuk Pemula",
+      "slug": "django-untuk-pemula",
+      "description": "Pelajari Django dari nol hingga bisa membuat aplikasi web lengkap.",
+      "short_description": "Kursus Django terlengkap untuk pemula.",
+      "price": "199000.00",
+      "level": "beginner",
+      "is_published": true,
+      "instructor": 2,
+      "category": 2,
+      "thumbnail": null,
+      "created_at": "2025-01-10T08:00:00Z",
+      "updated_at": "2025-01-10T08:00:00Z"
+    }
+  },
+  {
+    "model": "courses.course",
+    "pk": 2,
+    "fields": {
+      "title": "Python Data Science Bootcamp",
+      "slug": "python-data-science-bootcamp",
+      "description": "Kuasai Python untuk analisis data, visualisasi, dan machine learning.",
+      "short_description": "Dari Python dasar hingga machine learning.",
+      "price": "349000.00",
+      "level": "intermediate",
+      "is_published": true,
+      "instructor": 3,
+      "category": 3,
+      "thumbnail": null,
+      "created_at": "2025-01-15T09:00:00Z",
+      "updated_at": "2025-01-15T09:00:00Z"
+    }
+  },
+  {
+    "model": "courses.course",
+    "pk": 3,
+    "fields": {
+      "title": "React & TypeScript Advanced",
+      "slug": "react-typescript-advanced",
+      "description": "Bangun aplikasi React modern dengan TypeScript, hooks, dan state management.",
+      "short_description": "React + TypeScript untuk developer berpengalaman.",
+      "price": "449000.00",
+      "level": "advanced",
+      "is_published": true,
+      "instructor": 2,
+      "category": 2,
+      "thumbnail": null,
+      "created_at": "2025-02-01T10:00:00Z",
+      "updated_at": "2025-02-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "courses.lesson",
+    "pk": 1,
+    "fields": {
+      "course": 1,
+      "title": "Pengenalan Django dan Setup Environment",
+      "description": "Apa itu Django, kenapa menggunakannya, dan cara setup project pertama.",
+      "video_url": "https://example.com/videos/django-intro",
+      "duration_minutes": 20,
+      "order": 1,
+      "is_preview": true,
+      "created_at": "2025-01-10T08:00:00Z",
+      "updated_at": "2025-01-10T08:00:00Z"
+    }
+  },
+  {
+    "model": "courses.lesson",
+    "pk": 2,
+    "fields": {
+      "course": 1,
+      "title": "Models dan ORM",
+      "description": "Membuat model Django dan berinteraksi dengan database menggunakan ORM.",
+      "video_url": "https://example.com/videos/django-models",
+      "duration_minutes": 45,
+      "order": 2,
+      "is_preview": false,
+      "created_at": "2025-01-10T08:30:00Z",
+      "updated_at": "2025-01-10T08:30:00Z"
+    }
+  },
+  {
+    "model": "courses.lesson",
+    "pk": 3,
+    "fields": {
+      "course": 1,
+      "title": "Views dan URL Routing",
+      "description": "Memahami function-based views dan URL dispatcher Django.",
+      "video_url": "https://example.com/videos/django-views",
+      "duration_minutes": 35,
+      "order": 3,
+      "is_preview": false,
+      "created_at": "2025-01-10T09:00:00Z",
+      "updated_at": "2025-01-10T09:00:00Z"
+    }
+  },
+  {
+    "model": "courses.lesson",
+    "pk": 4,
+    "fields": {
+      "course": 2,
+      "title": "Pengantar Data Science dengan Python",
+      "description": "Overview ekosistem Python untuk data science: NumPy, Pandas, Matplotlib.",
+      "video_url": "https://example.com/videos/ds-intro",
+      "duration_minutes": 25,
+      "order": 1,
+      "is_preview": true,
+      "created_at": "2025-01-15T09:00:00Z",
+      "updated_at": "2025-01-15T09:00:00Z"
+    }
+  },
+  {
+    "model": "courses.lesson",
+    "pk": 5,
+    "fields": {
+      "course": 2,
+      "title": "Pandas untuk Analisis Data",
+      "description": "Manipulasi dan analisis data menggunakan library Pandas.",
+      "video_url": "https://example.com/videos/pandas",
+      "duration_minutes": 60,
+      "order": 2,
+      "is_preview": false,
+      "created_at": "2025-01-15T09:30:00Z",
+      "updated_at": "2025-01-15T09:30:00Z"
+    }
+  },
+  {
+    "model": "courses.enrollment",
+    "pk": 1,
+    "fields": {
+      "student": 4,
+      "course": 1,
+      "enrolled_at": "2025-01-20T10:00:00Z",
+      "is_active": true,
+      "completed_at": null
+    }
+  },
+  {
+    "model": "courses.enrollment",
+    "pk": 2,
+    "fields": {
+      "student": 5,
+      "course": 1,
+      "enrolled_at": "2025-01-21T11:00:00Z",
+      "is_active": true,
+      "completed_at": null
+    }
+  },
+  {
+    "model": "courses.enrollment",
+    "pk": 3,
+    "fields": {
+      "student": 4,
+      "course": 2,
+      "enrolled_at": "2025-01-22T09:00:00Z",
+      "is_active": true,
+      "completed_at": null
+    }
+  },
+  {
+    "model": "courses.progress",
+    "pk": 1,
+    "fields": {
+      "enrollment": 1,
+      "lesson": 1,
+      "is_completed": true,
+      "completed_at": "2025-01-20T11:00:00Z",
+      "last_position_seconds": 1200
+    }
+  },
+  {
+    "model": "courses.progress",
+    "pk": 2,
+    "fields": {
+      "enrollment": 1,
+      "lesson": 2,
+      "is_completed": false,
+      "completed_at": null,
+      "last_position_seconds": 600
+    }
+  },
+  {
+    "model": "courses.progress",
+    "pk": 3,
+    "fields": {
+      "enrollment": 3,
+      "lesson": 4,
+      "is_completed": true,
+      "completed_at": "2025-01-23T10:00:00Z",
+      "last_position_seconds": 1500
+    }
+  }
+]
