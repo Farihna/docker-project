@@ -22,17 +22,17 @@
 
 4. **Migrasi Database**
     ```bash
-    docker-compose exec app python manage.py migrate
+    docker-compose exec web python manage.py migrate
     ```
 
 5. **Import data awal**
     ```bash
-    docker-compose exec app python manage.py loaddata fixtures/initial_data.json
+    docker-compose exec web python manage.py loaddata fixtures/initial_data.json
     ```
 
 6. **Membuat Akun Administrator**
     ```bash
-    docker-compose exec app python manage.py createsuperuser
+    docker-compose exec web python manage.py createsuperuser
     ```
 
 7. **Akses Aplikasi**
@@ -75,77 +75,69 @@
 
 ```
 simple-lms/
-├── docker-compose.yml          
-├── Dockerfile                  
-├── requirements.txt            
-├── .env.example                
-├── manage.py                   
-│
-├── config/                     
-│   ├── __init__.py
-│   ├── settings.py             
-│   ├── urls.py                 
-│   └── wsgi.py
-│
-├── courses/                    
-│   ├── __init__.py
-│   ├── apps.py
-│   ├── models.py               
-│   ├── admin.py                
-│   └── migrations/
-│       ├── __init__.py
-│       └── 0001_initial.py     
-│
-├── fixtures/
-│   └── initial_data.json       
-│
-└── scripts/
-    └── query_demo.py           
+├── code/
+│   ├── courses/                 
+│   │   ├── migrations/          
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── 0002_course_enrollment_lesson_progress.py
+│   │   │   └── __init__.py
+│   │   ├── admin.py             
+│   │   ├── apps.py              
+│   │   ├── managers.py          
+│   │   ├── models.py            
+│   │   ├── tests.py             
+│   │   ├── views.py             
+│   │   └── __init__.py
+│   ├── fixtures/                
+│   │   ├── courses.csv
+│   │   ├── initial_data.json
+│   │   └── members.csv
+│   ├── lms/                     
+│   │   ├── asgi.py              
+│   │   ├── settings.py          
+│   │   ├── urls.py              
+│   │   ├── wsgi.py              
+│   │   └── __init__.py
+│   ├── scripts/                 
+│   │   └── query_demo.py        
+│   ├── db.sqlite3               
+│   ├── importer.py              
+│   └── manage.py                
+├── .env                         
+├── .env.example                 
+├── docker-compose.yaml          
+├── Dockerfile                   
+└── requirements.txt               
 ```
 ---
 
-### Relasi Antar Model
-
-| Model | Relasi | Ke | Keterangan |
-|---|---|---|---|
-| `Course` | ForeignKey | `User` | Satu instruktur mengajar banyak course |
-| `Course` | ForeignKey | `Category` | Course masuk satu kategori |
-| `Category` | ForeignKey (self) | `Category` | Hierarki kategori (tree) |
-| `Lesson` | ForeignKey | `Course` | Course punya banyak lesson, ordered |
-| `Enrollment` | ForeignKey | `User` | Student enroll ke course |
-| `Enrollment` | ForeignKey | `Course` | Course punya banyak enrollment |
-| `Progress` | ForeignKey | `Enrollment` | Track lesson selesai per enrollment |
-| `Progress` | ForeignKey | `Lesson` | Lesson mana yang diselesaikan |
-
----
-
-
 ## Data Models
+
 
 | Model | Keterangan |
 | :--- | :--- |
-| **UserProfile** | Ekstensi `OneToOne` dari User untuk sistem Role (Admin, Instructor, Student). |
-| **Category** | Struktur hierarki kategori menggunakan *self-referencing* (Parent-Child). |
-| **Course** | Data utama kursus yang terhubung ke Instructor (User) dan Category. |
-| **Lesson** | Materi kelas dengan sistem pengurutan (*ordering*) dan opsi *preview* gratis. |
-| **Enrollment** | Relasi pendaftaran siswa ke kursus dengan *constraint* unik per siswa-kursus. |
-| **Progress** | Pelacakan status penyelesaian materi dan posisi durasi video per siswa. |
+| **User** | Menggunakan kustomisasi `AbstractUser` dengan field **role** untuk manajemen akses (Admin, Instructor, Student). |
+| **Category** | Menggunakan `ForeignKey('self')` untuk mendukung struktur kategori bertingkat atau hierarki. |
+| **Course** | Entitas utama kursus yang terhubung secara efisien ke User (Instruktur) dan Category terkait. |
+| **Lesson** | Materi pembelajaran dengan field **order** dan pengaturan *ordering* agar materi tampil berurutan bagi siswa. |
+| **Enrollment** | Relasi pendaftaran kursus dengan `unique_together` untuk memastikan satu siswa hanya terdaftar satu kali di kursus yang sama. |
+| **Progress** | Pencatatan setiap **Lesson** yang berhasil diselesaikan oleh siswa dalam suatu pendaftaran (*Enrollment*). |
 
 ---
 
 ## Custom Model Managers (Optimasi Query)
 
 * **`Course.objects.for_listing()`**
-    Menggunakan `select_related` (JOIN) dan `annotate` (COUNT) untuk mengambil data instruktur, kategori, jumlah murid, dan jumlah materi dalam **hanya 1 query**.
+    Menggunakan `select_related('instructor', 'category')` untuk mengubah N+1 queries menjadi 1 query tunggal pada halaman list kursus.
 * **`Enrollment.objects.for_student_dashboard(user)`**
-    Dioptimasi untuk dashboard siswa dengan menggabungkan `select_related` dan `prefetch_related` guna menghitung progres penyelesaian kursus secara instan.
+    Menggunakan kombinasi `select_related` dan `prefetch_related` untuk mengambil data kursus dan progres belajar secara instan.
 
 ---
 
 ## Query Optimization Demo
 Jalankan perintah :
 ```bash
-docker-compose exec app python scripts/query_demo.py
+docker-compose run web python scripts/query_demo.py
 ```
 
 ---
@@ -178,12 +170,4 @@ docker-compose exec app python scripts/query_demo.py
 ![import_data](screenshots/import.png)
 
 ### Query Demo
-![demo1](screenshots/demo1.png)
-![demo2](screenshots/demo2.png)
-![demo3](screenshots/demo3.png)
-![demo4](screenshots/demo4.png)
-![demo5](screenshots/demo5.png)
-![ringkasan_demo](screenshots/ringkasan_demo.png)
-
-### Django Silk Monitoring & Profiling
-![silk](screenshots/silk.png)
+![demo](screenshots/demo.png)

@@ -1,0 +1,200 @@
+[
+{
+    "model": "courses.user",
+    "pk": 1,
+    "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "dosen01",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-04-14T14:07:10.015Z",
+        "role": "INSTRUCTOR",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "courses.user",
+    "pk": 2,
+    "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "dosen02",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-04-14T14:07:10.023Z",
+        "role": "INSTRUCTOR",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "courses.user",
+    "pk": 3,
+    "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "student1",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-04-14T14:07:10.033Z",
+        "role": "STUDENT",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "courses.user",
+    "pk": 4,
+    "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "student2",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-04-14T14:07:10.039Z",
+        "role": "STUDENT",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "courses.user",
+    "pk": 5,
+    "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "student3",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-04-14T14:07:10.044Z",
+        "role": "STUDENT",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "courses.user",
+    "pk": 6,
+    "fields": {
+        "password": "",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "student4",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-04-14T14:07:10.050Z",
+        "role": "STUDENT",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "courses.category",
+    "pk": 1,
+    "fields": {
+        "name": "Umum",
+        "parent": null
+    }
+},
+{
+    "model": "courses.course",
+    "pk": 1,
+    "fields": {
+        "title": "Pemrograman Web",
+        "description": "Belajar membuat aplikasi web",
+        "instructor": 1,
+        "category": 1
+    }
+},
+{
+    "model": "courses.course",
+    "pk": 2,
+    "fields": {
+        "title": "Basis Data",
+        "description": "Belajar SQL dan database",
+        "instructor": 1,
+        "category": 1
+    }
+},
+{
+    "model": "courses.course",
+    "pk": 3,
+    "fields": {
+        "title": "Algoritma",
+        "description": "Belajar algoritma dan struktur data",
+        "instructor": 2,
+        "category": 1
+    }
+},
+{
+    "model": "courses.course",
+    "pk": 4,
+    "fields": {
+        "title": "Jaringan Komputer",
+        "description": "Belajar networking dan protokol",
+        "instructor": 2,
+        "category": 1
+    }
+},
+{
+    "model": "courses.enrollment",
+    "pk": 1,
+    "fields": {
+        "student": 3,
+        "course": 1,
+        "enrolled_at": "2026-04-14T14:07:10.036Z"
+    }
+},
+{
+    "model": "courses.enrollment",
+    "pk": 2,
+    "fields": {
+        "student": 4,
+        "course": 2,
+        "enrolled_at": "2026-04-14T14:07:10.041Z"
+    }
+},
+{
+    "model": "courses.enrollment",
+    "pk": 3,
+    "fields": {
+        "student": 5,
+        "course": 3,
+        "enrolled_at": "2026-04-14T14:07:10.047Z"
+    }
+},
+{
+    "model": "courses.enrollment",
+    "pk": 4,
+    "fields": {
+        "student": 6,
+        "course": 4,
+        "enrolled_at": "2026-04-14T14:07:10.052Z"
+    }
+}
+]
