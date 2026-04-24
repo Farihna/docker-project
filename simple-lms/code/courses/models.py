@@ -1,80 +1,112 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.conf import settings
-from .managers import CourseManager, EnrollmentManager
+from django.contrib.auth.models import User
 
-# 1. User Model
-class User(AbstractUser):
-    class Role(models.TextChoices):
-        ADMIN = 'ADMIN', 'Admin'
-        INSTRUCTOR = 'INSTRUCTOR', 'Instructor'
-        STUDENT = 'STUDENT', 'Student'
-    
-    role = models.CharField(max_length=20, choices=Role.choices, default=Role.STUDENT)
 
-# 2. Category (Self-referencing)
-class Category(models.Model):
-    name = models.CharField(max_length=100)
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subcategories')
-
-    class Meta:
-        verbose_name_plural = "Categories"
+class Course(models.Model):
+    name = models.CharField("nama matkul", max_length=100)
+    description = models.TextField("deskripsi", default='-')
+    price = models.IntegerField("harga", default=10000)
+    image = models.ImageField("gambar", null=True, blank=True)
+    teacher = models.ForeignKey(
+        User,
+        verbose_name="pengajar",
+        on_delete=models.RESTRICT
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
-# 3. Course
-class Course(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField()
-    instructor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        limit_choices_to={'role': 'INSTRUCTOR'}
+    class Meta:
+        indexes = [
+            models.Index(fields=['price'], name='idx_course_price'),
+        ]
+        verbose_name = "Mata Kuliah"
+        verbose_name_plural = "Mata Kuliah"
+
+ROLE_OPTIONS = [
+    ('std', "Siswa"),
+    ('ast', "Asisten"),
+]
+
+
+class CourseMember(models.Model):
+    course_id = models.ForeignKey(
+        Course,
+        verbose_name="matkul",
+        on_delete=models.RESTRICT
     )
-    objects = CourseManager()
-    category = models.ForeignKey(Category, on_delete=models.PROTECT)
-
-    def __str__(self):
-        return self.title
-
-# 4. Lesson (dengan ordering)
-class Lesson(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
-    title = models.CharField(max_length=255)
-    content = models.TextField()
-    order = models.PositiveIntegerField()
-
-    class Meta:
-        ordering = ['order']
-
-    def __str__(self):
-        return f"{self.course.title} - {self.title}"
-
-# 5. Enrollment (Unique constraint)
-class Enrollment(models.Model):
-    student = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE,
-        limit_choices_to={'role': 'STUDENT'}
+    user_id = models.ForeignKey(
+        User,
+        verbose_name="siswa",
+        on_delete=models.RESTRICT
     )
-    objects = EnrollmentManager()
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    enrolled_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('student', 'course')
+    roles = models.CharField(
+        "peran",
+        max_length=3,
+        choices=ROLE_OPTIONS,
+        default='std'
+    )
 
     def __str__(self):
-        return f"{self.student.username} enrolled in {self.course.title}"
-
-# 6. Progress (Tracking)
-class Progress(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-    is_completed = models.BooleanField(default=False)
-    updated_at = models.DateTimeField(auto_now=True)
+        return f"{self.user_id} - {self.course_id} ({self.roles})"
 
     class Meta:
-        verbose_name_plural = "Progresses"
-        unique_together = ('enrollment', 'lesson')
+        indexes = [
+            models.Index(fields=['roles'], name='idx_member_role'),
+        ]
+        verbose_name = "Anggota Kelas"
+        verbose_name_plural = "Anggota Kelas"
+
+
+class CourseContent(models.Model):
+    name = models.CharField("judul konten", max_length=200)
+    description = models.TextField("deskripsi", default='-')
+    video_url = models.CharField(
+        'URL Video',
+        max_length=200,
+        null=True,
+        blank=True
+    )
+    file_attachment = models.FileField("File", null=True, blank=True)
+    course_id = models.ForeignKey(
+        Course,
+        verbose_name="matkul",
+        on_delete=models.RESTRICT
+    )
+    parent_id = models.ForeignKey(
+        "self",
+        verbose_name="induk",
+        on_delete=models.RESTRICT,
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Konten Kelas"
+        verbose_name_plural = "Konten Kelas"
+
+
+class Comment(models.Model):
+    content_id = models.ForeignKey(
+        CourseContent,
+        verbose_name="konten",
+        on_delete=models.CASCADE
+    )
+    member_id = models.ForeignKey(
+        CourseMember,
+        verbose_name="pengguna",
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField('komentar')
+
+    def __str__(self):
+        return f"Komentar oleh {self.member_id} pada {self.content_id}"
+
+    class Meta:
+        verbose_name = "Komentar"
+        verbose_name_plural = "Komentar"
