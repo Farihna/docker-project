@@ -2,7 +2,7 @@
 
 ## 1. API ENDPOINTS & DOCUMENTATION
 Menampilkan seluruh daftar fungsionalitas yang tersedia pada sistem LMS.
-![api endpoint](screenshots/api_enpoints.png)
+![api endpoint](screenshots/api_endpoints.png)
 
 ## 2. JWT AUTHENTICATION
 Sistem keamanan menggunakan JSON Web Token untuk proteksi data.
