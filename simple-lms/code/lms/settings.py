@@ -1,23 +1,26 @@
 """
-Django settings untuk Simple LMS - Lab 05: Optimasi Database
+Django settings untuk Simple LMS
+Progress 4: Advanced Features & Integration
 
-Melanjutkan dari Modul 04 (Django ORM) dengan tambahan:
-- Database PostgreSQL (bukan SQLite)
-- Django Silk untuk query profiling
-- Media files untuk ImageField dan FileField
+Tambahan dari Progress sebelumnya:
+- Redis  : Caching & Rate Limiting
+- MongoDB: Activity Log & Learning Analytics
+- Celery : Async Tasks (RabbitMQ sebagai broker)
 """
 
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: jangan gunakan key ini di production!
-SECRET_KEY = "django-insecure-lab05-db-optimization-simple-lms-key-2025"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "django-insecure-lab05-db-optimization-simple-lms-key-2025"
+)
 
-# SECURITY WARNING: matikan DEBUG di production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # =============================================================================
@@ -31,11 +34,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "silk",       # Django Silk - query profiling (Modul 05)
-    "ninja_simple_jwt",  # JWT Auth untuk API
-    "courses",    # Aplikasi Simple LMS kita
+    # Profiling
+    "silk",
+    # Auth
+    "ninja_simple_jwt",
+    # Celery scheduler & results
+    "django_celery_beat",
+    "django_celery_results",
+    # LMS apps
+    "courses",
 ]
-
 
 # =============================================================================
 # Middleware
@@ -43,7 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "silk.middleware.SilkyMiddleware",  # Silk harus di posisi awal (setelah Security)
+    "silk.middleware.SilkyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -74,34 +82,119 @@ WSGI_APPLICATION = "lms.wsgi.application"
 
 
 # =============================================================================
-# Database - PostgreSQL (sesuai docker-compose.yml)
+# Database - PostgreSQL
 # =============================================================================
-# Berbeda dengan Lab-compliance yang menggunakan SQLite,
-# lab ini menggunakan PostgreSQL agar optimasi index terlihat nyata.
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "lms_db",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "database",  # Nama service di docker-compose.yml
+        "NAME": os.environ.get("DB_NAME", "lms_db"),
+        "USER": os.environ.get("DB_USER", "postgres"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "postgres"),
+        "HOST": os.environ.get("DB_HOST", "database"),
         "PORT": "5432",
     }
 }
 
 
 # =============================================================================
-# Django Silk - Konfigurasi Profiling
-# Akses dashboard di: http://localhost:8000/silk/
+# Redis - Caching & Rate Limiting
 # =============================================================================
 
-SILKY_PYTHON_PROFILER = True   # Aktifkan function-level profiling
-SILKY_META = True              # Track query Silk sendiri (untuk transparansi)
+REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
+            "IGNORE_EXCEPTIONS": True,          # Jika Redis down, fallback ke no-cache
+        },
+        "KEY_PREFIX": "lms",                    # Prefix semua cache key
+        "TIMEOUT": 60 * 15,                     # Default TTL: 15 menit
+    }
+}
+
+# Cache key untuk setiap resource
+CACHE_TTL = {
+    "course_list":   60 * 10,   # 10 menit
+    "course_detail": 60 * 15,   # 15 menit
+}
+
+# Rate Limiting config (requests per window)
+RATE_LIMIT = {
+    "requests": 60,
+    "window":   60,   # detik
+}
 
 
 # =============================================================================
-# Password validation
+# MongoDB - Activity Log & Analytics
+# =============================================================================
+
+MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://mongodb:27017/")
+MONGODB_DB  = os.environ.get("MONGODB_DB", "lms_logs")
+
+
+# =============================================================================
+# Celery - Async Task Queue (RabbitMQ sebagai broker)
+# =============================================================================
+
+CELERY_BROKER_URL         = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//")
+CELERY_RESULT_BACKEND     = "django-db"          # Simpan hasil task di PostgreSQL
+CELERY_CACHE_BACKEND      = "django-cache"
+CELERY_ACCEPT_CONTENT     = ["json"]
+CELERY_TASK_SERIALIZER    = "json"
+CELERY_RESULT_SERIALIZER  = "json"
+CELERY_TIMEZONE           = "Asia/Jakarta"
+CELERY_ENABLE_UTC         = True
+
+# Celery Beat - Scheduled tasks
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# Jadwal periodik (bisa juga dikelola via Django Admin setelah migrasi)
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    # Jalankan setiap jam untuk update statistik enrollment
+    "update-course-statistics-hourly": {
+        "task":     "courses.tasks.update_course_statistics",
+        "schedule": crontab(minute=0),            # setiap awal jam
+    },
+    # Generate report CSV setiap hari pukul 01.00 WIB
+    "export-course-report-daily": {
+        "task":     "courses.tasks.export_course_report",
+        "schedule": crontab(hour=1, minute=0),
+    },
+}
+
+
+# =============================================================================
+# Email
+# =============================================================================
+
+EMAIL_BACKEND       = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST          = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT          = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
+
+
+# =============================================================================
+# Django Silk - Query Profiling (dev only)
+# =============================================================================
+
+SILKY_PYTHON_PROFILER = True
+SILKY_META            = True
+
+
+# =============================================================================
+# Password Validation
 # =============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -117,18 +210,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # =============================================================================
 
 LANGUAGE_CODE = "id"
-TIME_ZONE = "Asia/Jakarta"
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = "Asia/Jakarta"
+USE_I18N      = True
+USE_TZ        = True
 
 
 # =============================================================================
-# Static dan Media files
+# Static & Media Files
 # =============================================================================
 
 STATIC_URL = "static/"
-
-MEDIA_URL = "/media/"
+MEDIA_URL  = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

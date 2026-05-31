@@ -1,0 +1,102 @@
+course_id,course_name,teacher,price,total_members,created_at
+1,Pemrograman Web,dosen10,250000,6,2026-05-31 09:10
+2,Basis Data,dosen02,75000,3,2026-05-31 09:10
+3,Algoritma dan Struktur Data,dosen19,75000,4,2026-05-31 09:10
+4,Jaringan Komputer,dosen03,50000,4,2026-05-31 09:10
+5,Sistem Operasi,dosen16,200000,5,2026-05-31 09:10
+6,Kecerdasan Buatan,dosen03,250000,5,2026-05-31 09:10
+7,Pemrograman Mobile,dosen18,250000,8,2026-05-31 09:10
+8,Keamanan Siber,dosen05,250000,2,2026-05-31 09:10
+9,Rekayasa Perangkat Lunak,dosen16,75000,7,2026-05-31 09:10
+10,Pemrograman Python,dosen06,150000,1,2026-05-31 09:10
+11,Pemrograman Java,dosen17,100000,6,2026-05-31 09:10
+12,Manajemen Proyek TI,dosen20,250000,2,2026-05-31 09:10
+13,Analisis dan Desain Sistem,dosen07,125000,5,2026-05-31 09:10
+14,Komputasi Awan,dosen07,150000,7,2026-05-31 09:10
+15,Data Mining,dosen10,200000,4,2026-05-31 09:10
+16,Statistika,dosen12,125000,5,2026-05-31 09:10
+17,Matematika Diskrit,dosen17,125000,4,2026-05-31 09:10
+18,Arsitektur Komputer,dosen04,125000,4,2026-05-31 09:10
+19,Grafika Komputer,dosen08,75000,9,2026-05-31 09:10
+20,Interaksi Manusia Komputer,dosen11,50000,2,2026-05-31 09:10
+21,Pemrograman Web - Kelas A,dosen19,50000,3,2026-05-31 09:10
+22,Basis Data - Kelas A,dosen08,150000,2,2026-05-31 09:10
+23,Algoritma dan Struktur Data - Kelas A,dosen08,150000,6,2026-05-31 09:10
+24,Jaringan Komputer - Kelas A,dosen03,50000,1,2026-05-31 09:10
+25,Sistem Operasi - Kelas A,dosen02,200000,5,2026-05-31 09:10
+26,Kecerdasan Buatan - Kelas A,dosen03,75000,3,2026-05-31 09:10
+27,Pemrograman Mobile - Kelas A,dosen11,50000,4,2026-05-31 09:10
+28,Keamanan Siber - Kelas A,dosen17,50000,5,2026-05-31 09:10
+29,Rekayasa Perangkat Lunak - Kelas A,dosen09,75000,7,2026-05-31 09:10
+30,Pemrograman Python - Kelas A,dosen16,200000,4,2026-05-31 09:10
+31,Pemrograman Java - Kelas A,dosen18,75000,4,2026-05-31 09:10
+32,Manajemen Proyek TI - Kelas A,dosen19,75000,4,2026-05-31 09:10
+33,Analisis dan Desain Sistem - Kelas A,dosen16,150000,2,2026-05-31 09:10
+34,Komputasi Awan - Kelas A,dosen16,75000,5,2026-05-31 09:10
+35,Data Mining - Kelas A,dosen14,250000,6,2026-05-31 09:10
+36,Statistika - Kelas A,dosen04,75000,4,2026-05-31 09:10
+37,Matematika Diskrit - Kelas A,dosen14,50000,9,2026-05-31 09:10
+38,Arsitektur Komputer - Kelas A,dosen14,100000,3,2026-05-31 09:10
+39,Grafika Komputer - Kelas A,dosen15,125000,5,2026-05-31 09:10
+40,Interaksi Manusia Komputer - Kelas A,dosen02,250000,5,2026-05-31 09:10
+41,Pemrograman Web - Kelas B,dosen04,200000,4,2026-05-31 09:10
+42,Basis Data - Kelas B,dosen13,50000,4,2026-05-31 09:10
+43,Algoritma dan Struktur Data - Kelas B,dosen11,200000,4,2026-05-31 09:10
+44,Jaringan Komputer - Kelas B,dosen04,250000,10,2026-05-31 09:10
+45,Sistem Operasi - Kelas B,dosen07,75000,3,2026-05-31 09:10
+46,Kecerdasan Buatan - Kelas B,dosen18,75000,5,2026-05-31 09:10
+47,Pemrograman Mobile - Kelas B,dosen05,125000,5,2026-05-31 09:10
+48,Keamanan Siber - Kelas B,dosen06,125000,8,2026-05-31 09:10
+49,Rekayasa Perangkat Lunak - Kelas B,dosen15,100000,8,2026-05-31 09:10
+50,Pemrograman Python - Kelas B,dosen03,75000,5,2026-05-31 09:10
+51,Pemrograman Java - Kelas B,dosen18,125000,4,2026-05-31 09:10
+52,Manajemen Proyek TI - Kelas B,dosen02,50000,7,2026-05-31 09:10
+53,Analisis dan Desain Sistem - Kelas B,dosen18,200000,6,2026-05-31 09:10
+54,Komputasi Awan - Kelas B,dosen01,250000,7,2026-05-31 09:10
+55,Data Mining - Kelas B,dosen08,50000,2,2026-05-31 09:10
+56,Statistika - Kelas B,dosen14,75000,6,2026-05-31 09:10
+57,Matematika Diskrit - Kelas B,dosen16,125000,8,2026-05-31 09:10
+58,Arsitektur Komputer - Kelas B,dosen13,75000,4,2026-05-31 09:10
+59,Grafika Komputer - Kelas B,dosen06,50000,5,2026-05-31 09:10
+60,Interaksi Manusia Komputer - Kelas B,dosen01,125000,7,2026-05-31 09:10
+61,Pemrograman Web - Kelas C,dosen09,125000,8,2026-05-31 09:10
+62,Basis Data - Kelas C,dosen15,250000,6,2026-05-31 09:10
+63,Algoritma dan Struktur Data - Kelas C,dosen14,100000,2,2026-05-31 09:10
+64,Jaringan Komputer - Kelas C,dosen18,200000,2,2026-05-31 09:10
+65,Sistem Operasi - Kelas C,dosen16,200000,3,2026-05-31 09:10
+66,Kecerdasan Buatan - Kelas C,dosen07,75000,5,2026-05-31 09:10
+67,Pemrograman Mobile - Kelas C,dosen07,100000,3,2026-05-31 09:10
+68,Keamanan Siber - Kelas C,dosen19,50000,1,2026-05-31 09:10
+69,Rekayasa Perangkat Lunak - Kelas C,dosen18,200000,6,2026-05-31 09:10
+70,Pemrograman Python - Kelas C,dosen11,50000,4,2026-05-31 09:10
+71,Pemrograman Java - Kelas C,dosen02,50000,6,2026-05-31 09:10
+72,Manajemen Proyek TI - Kelas C,dosen16,150000,6,2026-05-31 09:10
+73,Analisis dan Desain Sistem - Kelas C,dosen17,150000,9,2026-05-31 09:10
+74,Komputasi Awan - Kelas C,dosen02,75000,6,2026-05-31 09:10
+75,Data Mining - Kelas C,dosen03,150000,5,2026-05-31 09:10
+76,Statistika - Kelas C,dosen06,250000,3,2026-05-31 09:10
+77,Matematika Diskrit - Kelas C,dosen20,50000,5,2026-05-31 09:10
+78,Arsitektur Komputer - Kelas C,dosen08,50000,6,2026-05-31 09:10
+79,Grafika Komputer - Kelas C,dosen04,125000,6,2026-05-31 09:10
+80,Interaksi Manusia Komputer - Kelas C,dosen08,150000,7,2026-05-31 09:10
+81,Pemrograman Web - Kelas D,dosen20,150000,8,2026-05-31 09:10
+82,Basis Data - Kelas D,dosen20,50000,4,2026-05-31 09:10
+83,Algoritma dan Struktur Data - Kelas D,dosen14,50000,8,2026-05-31 09:10
+84,Jaringan Komputer - Kelas D,dosen19,200000,8,2026-05-31 09:10
+85,Sistem Operasi - Kelas D,dosen17,150000,8,2026-05-31 09:10
+86,Kecerdasan Buatan - Kelas D,dosen09,100000,6,2026-05-31 09:10
+87,Pemrograman Mobile - Kelas D,dosen11,75000,2,2026-05-31 09:10
+88,Keamanan Siber - Kelas D,dosen09,75000,2,2026-05-31 09:10
+89,Rekayasa Perangkat Lunak - Kelas D,dosen05,125000,5,2026-05-31 09:10
+90,Pemrograman Python - Kelas D,dosen10,200000,6,2026-05-31 09:10
+91,Pemrograman Java - Kelas D,dosen11,125000,6,2026-05-31 09:10
+92,Manajemen Proyek TI - Kelas D,dosen03,250000,4,2026-05-31 09:10
+93,Analisis dan Desain Sistem - Kelas D,dosen15,50000,3,2026-05-31 09:10
+94,Komputasi Awan - Kelas D,dosen19,150000,6,2026-05-31 09:10
+95,Data Mining - Kelas D,dosen03,50000,7,2026-05-31 09:10
+96,Statistika - Kelas D,dosen07,150000,10,2026-05-31 09:10
+97,Matematika Diskrit - Kelas D,dosen09,150000,4,2026-05-31 09:10
+98,Arsitektur Komputer - Kelas D,dosen12,75000,5,2026-05-31 09:10
+99,Grafika Komputer - Kelas D,dosen08,50000,7,2026-05-31 09:10
+100,Interaksi Manusia Komputer - Kelas D,dosen10,100000,5,2026-05-31 09:10
+101,Dasar Pemrograman Web dengan React untuk Pemula,farih,150000,0,2026-05-31 09:19
