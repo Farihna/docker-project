@@ -1,17 +1,3 @@
-"""
-core/mongodb.py
-MongoDB client singleton & helper functions untuk:
-  - Activity Log  : mencatat setiap aksi user
-  - Analytics     : aggregation untuk laporan
-
-Collections yang digunakan:
-  - activity_logs : setiap event (login, view_course, enroll, dll)
-  - course_stats  : snapshot statistik course (di-upsert oleh Celery Beat)
-
-Usage:
-    from core.mongodb import log_activity, get_analytics
-"""
-
 import logging
 from datetime import datetime, timezone
 from django.conf import settings

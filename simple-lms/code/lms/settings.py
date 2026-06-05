@@ -1,13 +1,3 @@
-"""
-Django settings untuk Simple LMS
-Progress 4: Advanced Features & Integration
-
-Tambahan dari Progress sebelumnya:
-- Redis  : Caching & Rate Limiting
-- MongoDB: Activity Log & Learning Analytics
-- Celery : Async Tasks (RabbitMQ sebagai broker)
-"""
-
 import os
 from pathlib import Path
 

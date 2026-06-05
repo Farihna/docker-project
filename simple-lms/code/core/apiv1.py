@@ -1,15 +1,3 @@
-"""
-core/apiv1.py
-REST API endpoints untuk Simple LMS.
-
-Progress 4 — tambahan:
-  - Redis caching pada listCourses & detailCourse
-  - Cache invalidation pada create/update/delete Course
-  - Rate limiting (60 req/menit) pada endpoint publik
-  - MongoDB activity logging pada setiap aksi penting
-  - Celery async tasks: enrollment email & certificate generation
-"""
-
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 from ninja_simple_jwt.auth.views.api import mobile_auth_router

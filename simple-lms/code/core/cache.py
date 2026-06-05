@@ -1,13 +1,3 @@
-"""
-core/cache.py
-Helper functions untuk Redis caching & rate limiting di Simple LMS.
-
-Fungsi utama:
-  - cache_response()    : decorator untuk cache endpoint result
-  - invalidate_course() : hapus cache course saat data berubah
-  - rate_limit()        : decorator 60 req/menit per user/IP
-"""
-
 import json
 import logging
 import hashlib

@@ -1,11 +1,3 @@
-"""
-core/schemas.py
-Pydantic schemas untuk Django Ninja API.
-
-Progress 4 — tambahan:
-  - AnalyticsOut : schema untuk response data analytics dari MongoDB
-"""
-
 from ninja import Schema, Field
 from datetime import datetime
 from typing import Optional, List

@@ -1,0 +1,5 @@
+docker compose up -d
+lms-app (Attach Shell)
+    python manage.py migrate
+    python manage.py make_rsa
+    python manage.py seed_data

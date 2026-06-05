@@ -1,14 +1,3 @@
-"""
-courses/tasks.py
-Celery async tasks untuk Simple LMS.
-
-Tasks:
-1. send_enrollment_email    → email konfirmasi enroll (triggered on-demand)
-2. generate_certificate     → simulasi generate sertifikat (triggered on-demand)
-3. update_course_statistics → update statistik enrollment (Celery Beat, per jam)
-4. export_course_report     → export CSV laporan course (Celery Beat, harian)
-"""
-
 import csv
 import logging
 import os
