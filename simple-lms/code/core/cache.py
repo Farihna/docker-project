@@ -49,10 +49,20 @@ def cache_response(key_template: str, timeout: int | None = None):
     def decorator(view_func):
         @functools.wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            # Build final cache key (substitusi {id}, dll dari kwargs)
-            cache_key = _make_key(key_template, **kwargs)
+            # Build base cache key (substitusi {id}, dll dari kwargs path, misal {id} di course detail)
+            base_key = _make_key(key_template, **kwargs)
+
+            # Tambahkan hash dari query params (search, ordering, price, page, dll)
+            # supaya tiap kombinasi filter punya cache sendiri-sendiri
+            query_string = request.GET.urlencode()  # contoh: "search=python&page=2"
+            if query_string:
+                query_hash = hashlib.md5(query_string.encode()).hexdigest()[:10]
+                cache_key = f"{base_key}:{query_hash}"
+            else:
+                cache_key = base_key
+
             ttl = timeout or getattr(settings, "CACHE_TTL", {}).get(
-                cache_key.split(":")[1], 60 * 10
+                base_key.split(":")[1], 60 * 10
             )
 
             # Coba ambil dari cache dulu

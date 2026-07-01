@@ -1,5 +1,4 @@
 services:
-
   web:
     image: kaqfa/be_simple_lms-django
     container_name: lms-app

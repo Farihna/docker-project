@@ -1,235 +1,263 @@
-# Simple LMS — Advanced Features & Integration
+# Simple LMS — Backend API
+Backend API untuk aplikasi Learning Management System (LMS) sederhana berbasis Django 5.1 dan Django Ninja. Mendukung manajemen course, enrollment mahasiswa, progress materi, komentar, autentikasi JWT, dan caching Redis.
 
-## Arsitektur Sistem
+---
+## Tech Stack
+| Teknologi | Kegunaan |
+| :--- | :--- |
+| **Django 5.1** | Web framework utama |
+| **Django Ninja** | REST API framework (OpenAPI/Swagger otomatis) |
+| **PostgreSQL 16** | Database utama |
+| **Redis 7** | Cache layer (course list & detail) |
+| **MongoDB 7** | Penyimpanan activity log & analytics |
+| **Celery + RabbitMQ** | Async task (email konfirmasi, generate sertifikat) |
+| **Docker + Docker Compose** | Containerisasi seluruh service |
+| **django-silk** | Profiling & monitoring query database |
 
-```mermaid
-graph TB
-    Client([Client / Browser])
+---
+## Cara Menjalankan
+1. **Clone Repository**
 
-    subgraph Docker Network
-        subgraph "Web Layer"
-            APP[lms-app<br/>Django + Ninja<br/>:8000]
-        end
-        subgraph "Cache & Rate Limit"
-            REDIS[lms-redis<br/>Redis 7<br/>:6379]
-        end
-        subgraph "Primary Database"
-            PG[lms-db<br/>PostgreSQL 16<br/>:5436]
-        end
-        subgraph "Document Store"
-            MONGO[lms-mongodb<br/>MongoDB 7<br/>:27017]
-        end
-        subgraph "Message Queue"
-            MQ[lms-rabbitmq<br/>RabbitMQ 3<br/>:5672 / :15672]
-        end
-        subgraph "Async Workers"
-            WORKER[lms-celery-worker]
-            BEAT[lms-celery-beat]
-            FLOWER[lms-flower<br/>:5555]
-        end
-    end
+    ```bash
+    git clone https://github.com/Farihna/docker-project.git
+    cd simple-lms
+    ```
+2. **Jalankan Docker**
 
-    Client -->|HTTP Request| APP
-    APP -->|Cache Read/Write| REDIS
-    APP -->|Query| PG
-    APP -->|Activity Log| MONGO
-    APP -->|Publish Task| MQ
-    MQ -->|Consume Task| WORKER
-    BEAT -->|Schedule Task| MQ
-    FLOWER -->|Monitor| MQ
+    ```bash
+    docker compose up -d
+    ```
+    Semua service (app, PostgreSQL, Redis, Celery) akan berjalan otomatis.
+3. **Inisialisasi Database**
+
+    ```bash
+    docker compose exec lms-app python manage.py migrate
+    ```
+4. **Generate RSA Key (untuk JWT)**
+
+    ```bash
+    docker compose exec lms-app python manage.py make_rsa
+    ```
+5. **Seed Data**
+
+    ```bash
+    docker compose exec lms-app python manage.py seed_data
+    ```
+    Perintah ini akan membuat:
+    - 1 superuser (`admin`)
+    - 20 pengajar (`dosen01` - `dosen20`)
+    - 80 mahasiswa (`mhs001` - `mhs080`)
+    - 100 course, 300 materi, 500 enrollment, 1000+ komentar
+6. **Akses Aplikasi**
+
+    | Layanan | URL | Deskripsi / Kredensial |
+    | :--- | :--- | :--- |
+    | **Swagger UI** | [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs) | Dokumentasi API (Endpoints) |
+    | **Django Admin** | [http://localhost:8000/admin](http://localhost:8000/admin) | Panel Admin Django (Gunakan akun *superuser*) |
+    | **RabbitMQ UI** | [http://localhost:15672](http://localhost:15672) | Monitor message broker (guest / guest) |
+    | **Flower** | [http://localhost:5555](http://localhost:5555) | Monitor Celery tasks |
+
+7. **Akun Demo**
+
+    | Role | Username | Password |
+    | :--- | :--- | :--- |
+    | **Superadmin** | `admin` | `password123` |
+    | **Instructor** | `dosen01` | `password123` |
+    | **Student** | `mhs001` | `password123` |
+
+8. **Cara Mendapatkan Token JWT**
+
+    Lewat Swagger UI:
+
+    - Buka **Swagger UI** di browser: [http://localhost:8000/api/v1/docs](http://localhost:8000/api/v1/docs).
+    - Cari dan klik pada *endpoint* **`POST /api/v1/auth/sign-in`**.
+    - Klik tombol **"Try it out"** di sebelah kanan.
+    - Masukkan salah satu `username` dan `password` dari daftar **Akun Demo** di atas pada bagian *Request Body*.
+    - Klik tombol **Execute**. Jika berhasil, Anda akan menerima respons `200 OK` yang berisi token:
+        ```json
+        {
+            "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        }
+        ```
+    - Copy nilai `access` dari response.
+    - Klik tombol **Authorize** di pojok kanan atas halaman Swagger.
+    - Pada kolom `Bearer (http, Bearer)`, paste token yang sudah dicopy.
+    - Klik **Authorize**, lalu **Close**. Sekarang semua endpoint yang memerlukan autentikasi sudah bisa diakses.
+
+---
+## Endpoint Utama
+
+Base URL: `http://localhost:8000/api/v1`
+
+### Auth
+| Method | Endpoint | Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/auth/sign-in` | Public | Login, mendapatkan token JWT |
+| `POST` | `/auth/token-refresh` | Public | Refresh access token |
+| `POST` | `/register/` | Public | Registrasi akun baru |
+| `GET` | `/auth/me` | User | Lihat profil sendiri |
+| `PUT` | `/auth/me` | User | Update profil sendiri |
+
+### Course
+| Method | Endpoint | Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/courses/` | Public | List semua course (filtering, sorting, pagination) |
+| `GET` | `/courses/{id}` | Public | Detail course beserta materi |
+| `POST` | `/courses/` | Instructor | Buat course baru |
+| `PATCH` | `/courses/{id}` | Instructor | Update course |
+| `DELETE` | `/courses/{id}` | Admin | Hapus course |
+
+### Enrollment
+| Method | Endpoint | Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/enrollments` | Student | Daftar ke course |
+| `GET` | `/enrollments/mycourses` | Student | Lihat course yang diikuti |
+| `POST` | `/enrollments/{content_id}/progress` | Student | Tandai materi selesai |
+
+### Komentar
+| Method | Endpoint | Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/comments/` | Student | Tambah komentar pada materi |
+| `PUT` | `/comments/{id}` | Student | Edit komentar sendiri |
+| `DELETE` | `/comments/{id}` | Student/Instructor/Admin | Hapus komentar |
+
+### Analytics
+| Method | Endpoint | Akses | Deskripsi |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/analytics/enrollments` | Admin | Jumlah enrollment per course |
+| `GET` | `/analytics/activity` | Admin | Ringkasan aktivitas N hari terakhir |
+
+---
+## Fitur yang Diimplementasikan
+
+### Fondasi
+- Autentikasi JWT (login, refresh token, register)
+- Role-based access control (Admin, Instructor, Student)
+- Manajemen course (CRUD)
+- Enrollment mahasiswa ke course
+- Progress tracking materi
+- Komentar pada materi
+- Activity log berbasis MongoDB
+- Async task dengan Celery (email konfirmasi enrollment, generate sertifikat)
+
+### Paket 4 — Performance & API Quality
+- **Redis Caching** — course list (TTL 10 menit) dan course detail (TTL 15 menit)
+- **Cache Invalidation** — cache otomatis terhapus saat course dibuat, diupdate, atau dihapus
+- **Filtering** — `?search=`, `?min_price=`, `?max_price=` pada endpoint course list
+- **Sorting** — `?ordering=` dengan pilihan `name`, `price`, `created_at` (ascending/descending)
+- **Pagination** — 10 item per halaman, navigasi via `?page=`
+- **Cache Key Dinamis** — setiap kombinasi filter menghasilkan cache key unik, tidak saling tabrakan
+- **Response & Error Format Konsisten** — semua error menggunakan format `{"success": false, "error": "..."}`, semua aksi sukses menggunakan `{"success": true, "message": "..."}`
+- **Optimasi Query & N+1 Fixing** — dibuktikan dengan django-silk (lihat bagian Query Optimization)
+- **Rate Limiting** — 60 request/menit per user/IP, return 429 jika terlampaui
+![Rate Limit](screenshots/rate_limit_429.png)
+
+---
+## Query Optimization & N+1 Fixing
+
+Dibuktikan menggunakan **django-silk** profiler. Akses hasil profiling di `http://localhost:8000/silk/`
+
+Endpoint lab tersedia di:
+- `GET /lab/course-list/baseline/` vs `/lab/course-list/optimized/`
+- `GET /lab/course-members/baseline/` vs `/lab/course-members/optimized/`
+- `GET /lab/course-dashboard/baseline/` vs `/lab/course-dashboard/optimized/`
+- `GET /lab/bulk-insert/baseline/{course_id}/` vs `/lab/bulk-insert/optimized/{course_id}/`
+- `GET /lab/bulk-update/baseline/` vs `/lab/bulk-update/optimized/`
+
+### Hasil Perbandingan
+
+| Skenario | Versi | Queries | Query Time | Overall |
+| :--- | :--- | :--- | :--- | :--- |
+| Course List | Baseline | 101 | 50ms | 295ms |
+| Course List | **Optimized** | **1** | **3ms** | **27ms** |
+| Course Members | Baseline | 101 | 43ms | 287ms |
+| Course Members | **Optimized** | **3** | **10ms** | **98ms** |
+| Course Dashboard | Baseline | 101 | 44ms | 283ms |
+| Course Dashboard | **Optimized** | **5** | **3ms** | **31ms** |
+| Bulk Insert | Baseline | 1 | 1ms | 1330ms |
+| Bulk Insert | **Optimized** | **1** | **1ms** | **162ms** |
+| Bulk Update | Baseline | 103 | 141ms | 423ms |
+| Bulk Update | **Optimized** | **1** | **3ms** | **24ms** |
+
+![Silk Profiler](screenshots/silk1.png)
+![Silk Profiler](screenshots/silk2.png)
+
+### Teknik Optimasi yang Digunakan
+- `select_related()` — menghindari N+1 pada ForeignKey (teacher, course)
+- `prefetch_related()` — menghindari N+1 pada relasi many-to-many/reverse FK
+- `aggregate()` — mengganti loop query dengan single aggregation query
+- `bulk_create(batch_size=500)` — insert massal tanpa loop `save()`
+- `bulk_update()` via `F()` expression — update massal tanpa loop per objek
+
+---
+## Struktur Project
+
+```
+simple-lms/
+├── docker-compose.yml
+└── code/
+    ├── manage.py
+    ├── requirements.txt
+    ├── weather_api.py          # Demo Cache-Aside Pattern (Redis Exercise)
+    ├── test_cache.py           # Testing script Redis caching
+    ├── cache_report.md         # Laporan Redis Caching Exercise
+    ├── lms/                    # Konfigurasi utama Django
+    │   ├── settings.py
+    │   ├── urls.py
+    │   └── celery.py
+    ├── core/                   # API utama & shared modules
+    │   ├── apiv1.py            # Semua endpoint Django Ninja
+    │   ├── schemas.py          # Schema request/response
+    │   ├── cache.py            # Redis caching & rate limiting
+    │   ├── helpers.py          # Role & permission helpers
+    │   └── mongodb.py          # Activity log & analytics
+    └── courses/                # App courses
+        ├── models.py           # Model Course, CourseMember, dll
+        ├── migrations/         # Histori skema database
+        ├── views.py            # Endpoint lab (N+1 demo)
+        ├── tasks.py            # Celery async tasks
+        ├── admin.py            # Django Admin config
+        ├── urls.py             # API Routing
+        └── management/
+            └── commands/
+                └── seed_data.py
 ```
 
 ---
+## Bukti Implementasi
 
-## Docker Compose Services
+### Swagger UI
+![Swagger UI](screenshots/api_docs.png)
 
-| Service | Image | Port |
-|---|---|---|
-| lms-app | kaqfa/be_simple_lms-django | :8000 |
-| lms-db | postgres:16 | :5436 |
-| lms-redis | redis:7-alpine | :6379 |
-| lms-mongodb | mongo:7 | :27017 |
-| lms-rabbitmq | rabbitmq:3-management-alpine | :5672, :15672 |
-| lms-celery-worker | kaqfa/be_simple_lms-django | — |
-| lms-celery-beat | kaqfa/be_simple_lms-django | — |
-| lms-flower | mher/flower | :5555 |
-
-Semua container berjalan dengan status healthy:
-
+### Docker Containers — Semua Service Berjalan
 ![Docker PS](screenshots/docker_ps.png)
 
----
-
-## API Documentation
-
-Seluruh endpoint tersedia dan terdokumentasi otomatis via Django Ninja:
-
-![API Docs](screenshots/api_docs.png)
-
----
-
-## 1. Redis Caching
-
-### Strategi Caching
-
-| Cache Key | Endpoint | TTL |
-|---|---|---|
-| `lms:course:list` | `GET /api/v1/courses/` | 10 menit |
-| `lms:course:detail:{id}` | `GET /api/v1/courses/{id}` | 15 menit |
-
-### Alur Cache
-
-```
-Request → Cek Redis
-            │
-      ┌─────┴─────┐
-     HIT          MISS
-      │             │
- Return Cache   Query DB → Simpan ke Cache → Return
-```
-
-### Bukti Cache Berjalan
-
-Request pertama (cache MISS) membutuhkan waktu lebih lama karena query ke database. Request kedua (cache HIT) jauh lebih cepat karena data diambil langsung dari Redis:
-
-![Cache Hit Response Time](screenshots/redis_response_time.png)
-
-Cache key `lms:course:list` muncul di Redis setelah request pertama. Setelah course baru dibuat (POST), cache list otomatis terhapus (terlihat array kosong karena invalidation):
-
+### Redis Caching & Cache Invalidation
+Cache aktif — key tersimpan di Redis:
 ![Redis Cache Keys](screenshots/redis_cache_keys.png)
-![Redis Cache Invalidation](screenshots/redis_cache_keys2.png)
 
-Statistik keyspace hits dan misses di Redis membuktikan caching aktif berjalan:
+Setelah course diupdate/dihapus — key otomatis terhapus:
+![Cache Invalidation](screenshots/redis_cache_keys2.png)
 
-![Redis Keyspace Stats](screenshots/redis_keyspace.png)
+### Response Format Konsisten
+Error (403 — role tidak cukup):
+![Response Error](screenshots/response_error.png)
 
-### Cache Invalidation
+Sukses (delete course):
+![Response Sukses](screenshots/response_sukses.png)
 
-Cache otomatis dihapus saat data course berubah:
+### Filtering & Pagination
+![Filtering](screenshots/filtering1.png)
+![Filtering](screenshots/filtering2.png)
+![Pagination](screenshots/pagination.png)
 
-| Aksi | Cache yang Dihapus |
-|---|---|
-| Create course | `lms:course:list` |
-| Update course | `lms:course:list` + `lms:course:detail:{id}` |
-| Delete course | `lms:course:list` + `lms:course:detail:{id}` |
-
-### Rate Limiting
-
-- **Limit**: 60 requests/menit per user atau per IP
-- **Jika terlampaui**: HTTP 429 Too Many Requests
-- **Fail-open**: Jika Redis down, request tetap dilayani
-
-Ketika limit terlampaui, server mengembalikan pesan error dan meminta client menunggu 60 detik:
-
-![Rate Limit 429](screenshots/rate_limit_429.png)
-
-### Redis CLI — Monitoring
-
-```bash
-# Masuk Redis CLI
-docker exec -it lms-redis redis-cli
-
-KEYS lms:*                  # Lihat semua cache key
-TTL lms:course:list         # Sisa waktu cache (detik)
-INFO stats                  # Hit/miss rate
-DEL lms:course:list         # Hapus cache manual
-MONITOR                     # Monitor real-time
-```
-
----
-
-## 2. MongoDB Integration
-
-### Collections
-
-**`activity_logs`** — log setiap aksi user
-
-| Field | Keterangan |
-|---|---|
-| `event_type` | Jenis event (lihat tabel di bawah) |
-| `user_id` | ID user Django |
-| `username` | Username |
-| `course_id` | Course yang terlibat |
-| `metadata` | Data tambahan |
-| `created_at` | Timestamp UTC |
-
-**`course_stats`** — snapshot statistik course, di-update Celery Beat tiap jam
-
-### Event Types
-
-| Event | Trigger |
-|---|---|
-| `user_login` | `GET /auth/me` |
-| `view_course` | `GET /courses/` dan `GET /courses/{id}` |
-| `enroll_course` | `POST /enrollments` |
-| `post_comment` | `POST /comments/` |
-| `complete_lesson` | `POST /enrollments/{id}/progress` |
-| `export_report` | Celery task export |
-
-### Bukti Activity Log Tersimpan
-
-Setiap aksi user tercatat otomatis di MongoDB collection `activity_logs`:
-
-![MongoDB Activity Logs](screenshots/mongodb_activity_logs.png)
-
-### Analytics Endpoints (Admin Only)
-
-| Endpoint | Keterangan |
-|---|---|
-| `GET /api/v1/analytics/enrollments` | Jumlah enrollment per course |
-| `GET /api/v1/analytics/activity?days=7` | Aktivitas 7 hari terakhir |
-
----
-
-## 3. Celery Tasks
-
-### Alur Task (Enrollment)
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Django
-    participant RabbitMQ
-    participant Worker
-
-    Client->>Django: POST /enrollments
-    Django->>RabbitMQ: publish task
-    Django-->>Client: 200 OK
-    RabbitMQ->>Worker: consume task
-    Worker->>Worker: kirim email
-```
-
-### Daftar Tasks
-
-| Task | Trigger | Fungsi |
-|---|---|---|
-| `send_enrollment_email` | Saat student enroll | Kirim email konfirmasi |
-| `generate_certificate` | Saat semua lesson selesai | Generate file sertifikat |
-| `update_course_statistics` | Setiap awal jam (Beat) | Update total member ke MongoDB |
-| `export_course_report` | Setiap hari jam 01.00 (Beat) | Export data course ke CSV |
-
-### Bukti Tasks Berjalan
-
-Keempat tasks terdaftar dan berhasil dieksekusi oleh Celery Worker, terpantau via Flower:
-
+### Celery Tasks (Flower)
 ![Flower Tasks](screenshots/flower_tasks.png)
-![Flower Tasks](screenshots/flower_tasks2.png)
 ![Flower Worker](screenshots/flower_worker.png)
 
----
+### RabbitMQ
+![RabbitMQ](screenshots/rabbitmq_management.png)
 
-## 4. Monitoring
-
-| Layanan | URL | Kredensial |
-|---|---|---|
-| API Docs | http://localhost:8000/api/v1/docs | — |
-| Django Admin | http://localhost:8000/admin | superuser |
-| Django Silk | http://localhost:8000/silk/ | superuser |
-| Flower | http://localhost:5555 | — |
-| RabbitMQ | http://localhost:15672 | guest / guest |
-
-RabbitMQ Management menampilkan koneksi aktif dari Celery worker dan beat:
-
-![RabbitMQ Management](screenshots/rabbitmq_management.png)
-
----
+### MongoDB Activity Logs
+![MongoDB](screenshots/mongodb_activity_logs.png)

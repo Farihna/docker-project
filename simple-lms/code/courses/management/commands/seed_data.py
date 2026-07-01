@@ -5,6 +5,7 @@ Jalankan dengan:
     python manage.py seed_data
 
 Data yang dibuat:
+    - superuser admin (username: admin, password: password123)
     - 20 User pengajar (dosen01 - dosen20)
     - 80 User mahasiswa (mhs001 - mhs080)
     - 100 Course (mata kuliah)
@@ -139,6 +140,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.HTTP_INFO('  Seeding Data - Lab 05: Optimasi Database'))
         self.stdout.write(self.style.HTTP_INFO('=' * 55))
 
+        self._seed_superuser()
         teachers = self._seed_teachers()
         students = self._seed_students()
         courses = self._seed_courses(teachers)
@@ -176,7 +178,7 @@ class Command(BaseCommand):
                     first_name=fname,
                     last_name=lname,
                     email=f'{username}@univ.ac.id',
-                    is_staff=False,
+                    is_staff=True,
                     # make_password() diperlukan karena bulk_create tidak memanggil
                     # set_password() → password harus di-hash sebelum bulk_create
                     password=make_password('password123'),
@@ -188,6 +190,18 @@ class Command(BaseCommand):
         teachers = list(User.objects.filter(username__startswith='dosen'))
         self.stdout.write(f'  → {len(teachers)} pengajar tersedia')
         return teachers
+    
+    def _seed_superuser(self):
+        self.stdout.write('\n[0/6] Membuat superuser...')
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser(
+                username='admin',
+                email='admin@lms.com',
+                password='password123',
+            )
+            self.stdout.write('  → Superuser "admin" berhasil dibuat')
+        else:
+            self.stdout.write('  → Superuser "admin" sudah ada, dilewati')
 
     # -------------------------------------------------------------------------
     # Step 2: Buat 80 User mahasiswa

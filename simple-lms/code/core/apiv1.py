@@ -1,7 +1,9 @@
 from ninja import NinjaAPI
 from ninja.errors import HttpError
+from ninja.pagination import paginate, PageNumberPagination
 from ninja_simple_jwt.auth.views.api import mobile_auth_router
 from ninja_simple_jwt.auth.ninja_auth import HttpJwtAuth
+from django.db.models import Q
 from django.contrib.auth.models import User
 from typing import List
 
@@ -10,7 +12,8 @@ from core.schemas import (
     CommentIn, CommentUpdate,
     CourseIn, CourseMemberOut, CourseOut, DetailCourseOut,
     Register, UserOut,
-    AnalyticsOut,          # schema baru — lihat schemas.py
+    AnalyticsOut,
+    SuccessResponse,
 )
 from core.helpers import (
     admin_required, check_course_owner, check_enrollment,
@@ -32,6 +35,19 @@ apiv1.add_router("/auth/", mobile_auth_router)
 
 apiAuth = HttpJwtAuth()
 
+@apiv1.exception_handler(HttpError)
+def custom_http_error_handler(request, exc):
+    return apiv1.create_response(
+        request,
+        {"success": False, "error": exc.message},
+        status=exc.status_code,
+    )
+
+ALLOWED_ORDERING_FIELDS = {
+    "price", "-price",
+    "created_at", "-created_at",
+    "name", "-name",
+}
 
 # =============================================================================
 # COURSES
@@ -39,10 +55,26 @@ apiAuth = HttpJwtAuth()
 
 @apiv1.get("courses/", response=List[CourseOut])
 @rate_limit()
+@paginate(PageNumberPagination, page_size=10)
 @cache_response(key_template=COURSE_LIST_KEY, timeout=60 * 10)
-def listCourses(request):
+def listCourses(
+    request,
+    search: str = None,
+    min_price: int = None,
+    max_price: int = None,
+    ordering: str = "-created_at",
+):
     """
-    Ambil semua course.
+    Ambil semua course dengan filtering, sorting, dan pagination.
+
+    Query params:
+    - search     : cari di name/description (case-insensitive)
+    - min_price  : filter harga minimum
+    - max_price  : filter harga maksimum
+    - ordering   : price, -price, created_at, -created_at, name, -name
+    - page       : nomor halaman (otomatis dari PageNumberPagination)
+    - page_size  : jumlah item per halaman (otomatis dari PageNumberPagination)
+
     - Cache TTL : 10 menit
     - Rate limit: 60 req/menit per user/IP
     """
@@ -51,7 +83,24 @@ def listCourses(request):
         user_id=getattr(request.user, "id", None),
         username=getattr(request.user, "username", None),
     )
-    return Course.objects.select_related("teacher").all()
+
+    qs = Course.objects.select_related("teacher").all()
+
+    if search:
+        qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search))
+
+    if min_price is not None:
+        qs = qs.filter(price__gte=min_price)
+
+    if max_price is not None:
+        qs = qs.filter(price__lte=max_price)
+
+    if ordering in ALLOWED_ORDERING_FIELDS:
+        qs = qs.order_by(ordering)
+    else:
+        qs = qs.order_by("-created_at")  # fallback aman kalau field tidak valid
+
+    return qs
 
 
 @apiv1.get("courses/{id}", response=DetailCourseOut)
@@ -94,7 +143,7 @@ def createCourse(request, data: CourseIn):
         image=data.image,
         teacher=user,
     )
-    invalidate_course_cache()           # list berubah → hapus cache list
+    invalidate_course_cache()
     return course
 
 
@@ -113,11 +162,11 @@ def updateCourse(request, id: int, data: CourseIn):
         setattr(course, attr, value)
     course.save()
 
-    invalidate_course_cache(course_id=id)   # hapus cache list + detail
+    invalidate_course_cache(course_id=id)
     return course
 
 
-@apiv1.delete("courses/{id}", auth=apiAuth)
+@apiv1.delete("courses/{id}", auth=apiAuth, response=SuccessResponse)
 @admin_required
 def deleteCourse(request, id: int):
     """Hapus course. Invalidate cache list & detail."""
@@ -131,7 +180,7 @@ def deleteCourse(request, id: int):
 
     course.delete()
     invalidate_course_cache(course_id=id)
-    return {"message": "Course berhasil dihapus"}
+    return {"success": True, "message": "Course berhasil dihapus"}
 
 
 # =============================================================================
@@ -230,7 +279,7 @@ def getMyCourses(request):
     return mycourses
 
 
-@apiv1.post("enrollments/{content_id}/progress", auth=apiAuth)
+@apiv1.post("enrollments/{content_id}/progress", auth=apiAuth, response=SuccessResponse)
 @student_required
 def mark_lesson_complete(request, content_id: int):
     """
@@ -262,10 +311,9 @@ def mark_lesson_complete(request, content_id: int):
             user.id, user.username,
             content.course_id.id, content.course_id.name,
         )
-        return {"message": f"Selamat! Course {content.course_id.name} selesai. Sertifikat sedang dibuat."}
+        return {"success": True, "message": f"Selamat! Course {content.course_id.name} selesai. Sertifikat sedang dibuat."}
 
-    return {"message": f"Materi '{content.name}' ditandai sebagai selesai ({completed_count}/{total_contents})"}
-
+    return {"success": True, "message": f"Materi '{content.name}' ditandai sebagai selesai ({completed_count}/{total_contents})"}
 
 def _count_completed_lessons(user_id: int, course_id: int) -> int:
     """Hitung jumlah lesson yang sudah diselesaikan user di suatu course (via MongoDB log)."""
@@ -284,7 +332,7 @@ def _count_completed_lessons(user_id: int, course_id: int) -> int:
 # COMMENTS
 # =============================================================================
 
-@apiv1.post("comments/", auth=apiAuth)
+@apiv1.post("comments/", auth=apiAuth, response=SuccessResponse)
 def postComment(request, data: CommentIn):
     user    = get_authenticated_user(request)
     content = CourseContent.objects.filter(id=data.content_id).first()
@@ -312,10 +360,10 @@ def postComment(request, data: CommentIn):
         content_id=data.content_id,
     )
 
-    return {"message": "Komentar berhasil ditambahkan"}
+    return {"success": True, "message": "Komentar berhasil ditambahkan"}
 
 
-@apiv1.put("comments/{id}", auth=apiAuth)
+@apiv1.put("comments/{id}", auth=apiAuth, response=SuccessResponse)
 def updateComment(request, id: int, data: CommentUpdate):
     user    = User.objects.get(pk=request.user.id)
     comment = Comment.objects.filter(id=id).first()
@@ -327,10 +375,10 @@ def updateComment(request, id: int, data: CommentUpdate):
 
     comment.comment = data.comment
     comment.save()
-    return {"message": "Komentar berhasil diperbarui"}
+    return {"success": True, "message": "Komentar berhasil diperbarui"}
 
 
-@apiv1.delete("comments/{id}", auth=apiAuth)
+@apiv1.delete("comments/{id}", auth=apiAuth, response=SuccessResponse)
 def deleteComment(request, id: int):
     user    = User.objects.get(pk=request.user.id)
     comment = Comment.objects.select_related("content_id__course_id").filter(id=id).first()
@@ -343,7 +391,7 @@ def deleteComment(request, id: int):
 
     if is_comment_owner or is_course_owner or is_superadmin:
         comment.delete()
-        return {"message": "Komentar berhasil dihapus"}
+        return {"success": True, "message": "Komentar berhasil dihapus"}
     raise HttpError(403, "Anda tidak memiliki izin untuk menghapus komentar ini")
 
 

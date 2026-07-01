@@ -116,3 +116,18 @@ class AnalyticsOut(Schema):
     """Schema untuk response data analytics enrollment dari MongoDB."""
     course_id:         int
     total_enrollments: int
+
+# =============================================================================
+# Standard Response Wrapper
+# =============================================================================
+
+class SuccessResponse(Schema):
+    """Response standar untuk aksi sukses tanpa data spesifik (delete, dll)."""
+    success: bool = True
+    message: str
+
+
+class ErrorResponse(Schema):
+    """Response standar untuk error."""
+    success: bool = False
+    error:   str
