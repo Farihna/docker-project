@@ -31,17 +31,17 @@ Backend API untuk aplikasi Learning Management System (LMS) sederhana berbasis D
 3. **Inisialisasi Database**
 
     ```bash
-    docker compose exec lms-app python manage.py migrate
+    docker compose exec web python manage.py migrate
     ```
 4. **Generate RSA Key (untuk JWT)**
 
     ```bash
-    docker compose exec lms-app python manage.py make_rsa
+    docker compose exec web python manage.py make_rsa
     ```
 5. **Seed Data**
 
     ```bash
-    docker compose exec lms-app python manage.py seed_data
+    docker compose exec web python manage.py seed_data
     ```
     Perintah ini akan membuat:
     - 1 superuser (`admin`)
